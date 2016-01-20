@@ -42,3 +42,13 @@ steps came the proc steps. PROC MI multiply imputed the missing data, PROC REG f
 ordinary regression line to each of the multiply imputed datasets and saved results
 in a different dataset and finally PROC MIANALYZE pooled together the parameter estimates
 from the previous datasets.
+
+The R script was used in a small simulation study in the first part of the paper. Normal
+random variables were created along with the response variable, then one of the variables
+was deleted in a random fashion, using rbinom() function to create missing data. Mean
+imputation, regression mean imputation, stochasitc regression mean imputation and complete
+case analyses were done. Since the regression coefficients were known, the bias, variance
+and mean square error were calcualted to compare the different "simple" imputation methods.
+Because this would have used too much time in the presentation, it was not included in the
+powerpoint file, however this small study is in the final project paper. See the final
+project paper for more information.
