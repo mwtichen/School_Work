@@ -1,0 +1,150 @@
+filename tennis1 'E:\Tennis\AusOpen-men-2013.csv';
+
+data test26;
+infile tennis1 DSD;
+input Player1 	Player2  Round	Result	FNL1	FNL2	
+FSP1	FSW1	SSP1	SSW1	ACE1	DBF1	WNR1	
+UFE1	BPC1	BPW1	NPA1	NPW1	TPW1	ST11	
+ST21	ST31	ST41	ST51	FSP2	FSW2	SSP2	
+SSW2	ACE2	DBF2	WNR2	UFE2	BPC2	BPW2	
+NPA2	NPW2	TPW2	ST12	ST22	ST32	ST42	
+ST52;
+
+data tennis1;
+	set work.test26;
+	keep FNL1 FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1
+	TPW1 ST11 ST21 ST31 ST41 ST51;
+run;
+
+filename tennis1 'E:\Tennis\AusOpen-women-2013.csv';
+data test27;
+infile tennis1 DSD;
+input Player1 	Player2  Round	Result	FNL1	FNL2	
+FSP1	FSW1	SSP1	SSW1	ACE1	DBF1	WNR1	
+UFE1	BPC1	BPW1	NPA1	NPW1	TPW1	ST11	
+ST21	ST31	ST41	ST51	FSP2	FSW2	SSP2	
+SSW2	ACE2	DBF2	WNR2	UFE2	BPC2	BPW2	
+NPA2	NPW2	TPW2	ST12	ST22	ST32	ST42	
+ST52;
+
+data tennis2;
+	set work.test27;
+	keep FNL1 FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1
+	TPW1 ST11 ST21 ST31 ST41 ST51;
+run;
+
+filename tennis3 'E:\Tennis\FrenchOpen-men-2013.csv';
+data test28;
+infile tennis3 DSD;
+input Player1 	Player2  Round	Result	FNL1	FNL2	
+FSP1	FSW1	SSP1	SSW1	ACE1	DBF1	WNR1	
+UFE1	BPC1	BPW1	NPA1	NPW1	TPW1	ST11	
+ST21	ST31	ST41	ST51	FSP2	FSW2	SSP2	
+SSW2	ACE2	DBF2	WNR2	UFE2	BPC2	BPW2	
+NPA2	NPW2	TPW2	ST12	ST22	ST32	ST42	
+ST52;
+
+data tennis3;
+	set work.test28;
+	keep FNL1 FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1
+	TPW1 ST11 ST21 ST31 ST41 ST51;
+run;
+
+filename tennis4 'E:\Tennis\FrenchOpen-men-2013.csv';
+/*Error above, should be ...FrenchOpen-women-... */
+data test29;
+infile tennis4 DSD;
+input Player1 	Player2  Round	Result	FNL1	FNL2	
+FSP1	FSW1	SSP1	SSW1	ACE1	DBF1	WNR1	
+UFE1	BPC1	BPW1	NPA1	NPW1	TPW1	ST11	
+ST21	ST31	ST41	ST51	FSP2	FSW2	SSP2	
+SSW2	ACE2	DBF2	WNR2	UFE2	BPC2	BPW2	
+NPA2	NPW2	TPW2	ST12	ST22	ST32	ST42	
+ST52;
+
+data tennis4;
+	set work.test29;
+	keep FNL1 FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1
+	TPW1 ST11 ST21 ST31 ST41 ST51;
+run;
+
+proc append base=work.tennis1
+	        data=work.tennis2;
+run;
+
+proc append base=work.tennis1
+	        data=work.tennis3;
+run;
+
+proc append base=work.tennis1
+	        data=work.tennis4;
+run;
+
+data tennis0;
+set tennis1;
+if FNL1=. then delete;
+if ACE1=. then delete;
+run;
+
+title'The Dataset';
+proc print data=tennis0;
+run;
+
+title'Imputation via Monotone Regression Method';
+proc mi data=work.tennis0
+	seed=123456 out=outex1;
+monotone reg(ST21 = FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1 TPW1 ST11);
+monotone reg(ST31 = FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1 TPW1 ST11 ST21);
+monotone reg(ST41 = FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1 TPW1 ST11 ST21 ST31);
+monotone reg(ST51 = FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1 TPW1 ST11 ST21 ST31 ST41);
+var FNL1 FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1
+	TPW1 ST11 ST21 ST31 ST41 ST51;
+run;
+
+proc reg data=outex1 outest=outreg1 covout noprint;
+   model FNL1= FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1
+	TPW1 ST11 ST21 ST31 ST41 ST51;
+   by _Imputation_;
+run;
+
+title'Pooling the Parameter Estimates';
+proc mianalyze data=outreg1 edf=422;
+   modeleffects Intercept FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1
+	TPW1 ST11 ST21 ST31 ST41 ST51;
+run;
+
+title'Imputation via Monotone Predictive Mean Matching Method';
+proc mi data=work.tennis0
+	seed=123456 out=outex2;
+monotone regpmm(ST21 = FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1 TPW1 ST11);
+monotone regpmm(ST31 = FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1 TPW1 ST11 ST21);
+monotone regpmm(ST41 = FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1 TPW1 ST11 ST21 ST31);
+monotone regpmm(ST51 = FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1 TPW1 ST11 ST21 ST31 ST41);
+var FNL1 FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1
+	TPW1 ST11 ST21 ST31 ST41 ST51;
+run;
+
+proc reg data=outex2 outest=outreg2 covout noprint;
+   model FNL1= FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1
+	TPW1 ST11 ST21 ST31 ST41 ST51;
+   by _Imputation_;
+run;
+
+title'Pooling the Parameter Estimates';
+proc mianalyze data=outreg2 edf=422;
+   modeleffects Intercept FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1
+	TPW1 ST11 ST21 ST31 ST41 ST51;
+run;
+
+title'Using the E-M Alg';
+proc mi data=tennis0 nimpute=0;
+em outem=tennisem;
+var FNL1 FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1
+	TPW1 ST11 ST21 ST31 ST41 ST51;
+run;
+
+
+proc reg data=tennisem outest=outreg2 covout;
+   model FNL1= FSW1 SSW1 ACE1 WNR1 UFE1 BPC1 BPW1
+	TPW1 ST11 ST21 ST31 ST41 ST51;
+run;

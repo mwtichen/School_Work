@@ -1,0 +1,14 @@
+Sub DataCleanUp()
+
+Dim rng As Range, cell As Range
+
+Set rng = Range("A1:AP127")
+
+For Each cell In rng
+If cell.Value = "NA" Then
+cell.Select
+Selection.ClearContents
+End If
+Next cell
+
+End Sub

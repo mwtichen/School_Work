@@ -1,0 +1,168 @@
+library('HotDeckImputation')
+#Creating the dataset
+N <- 250
+x1<-rnorm(N,6,1)  
+x2<-rnorm(N,0,1)         
+x3<-rnorm(N,-10,1)
+y<--1+1*x1-1*x2+1*x3+rnorm(N,0,1)
+#Making x3 MCAR        
+alpha=.3          
+r.x3.mcar<-rbinom(N,1,prob=alpha)
+x3.mcar<-x3*(1-r.x3.mcar)+r.x3.mcar*99999
+x3.mcar[x3.mcar==99999]=NA
+#The complete case analysis
+mm1 <- lm(y~x1+x2+x3.mcar, na.action=na.omit)
+beta<-mm1$coeff
+beta<- t(beta)
+beta<- t(beta)
+beta1 <- beta
+std<-summary(mm1)$sigma
+#The mean imputation analysis
+design<- cbind(y,x1,x2,x3.mcar)
+design<-data.frame(design)
+x1.1<-design$x1[complete.cases(design)]
+x2.1<-design$x2[complete.cases(design)]
+x3.1<-design$x3.mcar[complete.cases(design)]
+y.1<-design$y[complete.cases(design)]
+x1.2<-design$x1[!complete.cases(design)]
+x2.2<-design$x2[!complete.cases(design)]
+y.2<-design$y[!complete.cases(design)]
+x0.2<-rep(1,length(x2.2))
+design<-as.matrix(design)
+design<- impute.mean(design)
+design<-data.frame(design)
+mm1 <- lm(data=design,X1~X2+X3+X4)
+beta<-mm1$coeff
+beta<- t(beta)
+beta<- t(beta)
+beta2<- beta
+#This plot illustrates reduction in variance of x3
+#plot(design$X4, design$X1, xlab='Variable with Imputed Values', ylab='Response')
+#The Regresion Mean Analysis
+matrix <- cbind(x0.2,x1.2,x2.2)
+beta<-beta1[-4,]
+beta <- t(beta)
+beta <- t(beta)
+x3.2 <- matrix %*% beta
+matrix <- cbind(y.2,x1.2,x2.2,x3.2)
+matrix0 <- cbind(y.1,x1.1,x2.1,x3.1)
+matrix<- rbind(matrix0,matrix)
+design<-matrix
+design<-data.frame(design)
+mm1<-lm(data=design,y.1~x1.1+x2.1+x3.1)
+beta<-mm1$coeff
+beta3<- beta
+beta3<- t(beta3)
+beta3<- t(beta3)
+#This plot illustrates problems with Regression Mean Imputation
+#plot(design$x3.1, design$x2.1, xlab='Imputed Variable', ylab='Covariate')
+#The stocahstic regression mean imputation
+matrix <- cbind(x0.2,x1.2,x2.2)
+z <- rnorm(length(x2.2),0,std)
+beta<-beta1[-4,]
+beta <- t(beta)
+beta <- t(beta)
+x3.2 <- matrix %*% beta + z
+matrix <- cbind(y.2,x1.2,x2.2,x3.2)
+matrix0 <- cbind(y.1,x1.1,x2.1,x3.1)
+matrix<- rbind(matrix0,matrix)
+design<-matrix
+design<-data.frame(design)
+mm1<-lm(data=design,y.1~x1.1+x2.1+x3.1)
+beta<-mm1$coeff
+beta4<- beta
+beta4<- t(beta4)
+beta4<- t(beta4)
+
+
+
+for(i in 1:9999){
+r.x3.mcar<-rbinom(N,1,prob=alpha)
+x3.mcar<-x3*(1-r.x3.mcar)+r.x3.mcar*99999
+x3.mcar[x3.mcar==99999]=NA
+mm1 <- lm(y~x1+x2+x3.mcar, na.action=na.omit)
+std<-summary(mm1)$sigma
+beta <- mm1$coeff
+beta <- t(beta)
+beta <- t(beta)
+beta1.loop <- beta
+beta1 <- cbind(beta1,beta)
+design<- cbind(y,x1,x2,x3.mcar)
+design<-data.frame(design)
+x1.1<-design$x1[complete.cases(design)]
+x2.1<-design$x2[complete.cases(design)]
+x3.1<-design$x3.mcar[complete.cases(design)]
+y.1<-design$y[complete.cases(design)]
+x1.2<-design$x1[!complete.cases(design)]
+x2.2<-design$x2[!complete.cases(design)]
+y.2<-design$y[!complete.cases(design)]
+x0.2<-rep(1,length(x2.2))
+design<-as.matrix(design)
+design<- impute.mean(design)
+design<-data.frame(design)
+mm1 <- lm(data=design,X1~X2+X3+X4)
+beta<-mm1$coeff
+beta<- t(beta)
+beta<- t(beta)
+beta2<- cbind(beta2,beta)
+matrix <- cbind(x0.2,x1.2,x2.2)
+beta<-beta1.loop[-4,]
+beta <- t(beta)
+beta <- t(beta)
+x3.2 <- matrix %*% beta
+matrix <- cbind(y.2,x1.2,x2.2,x3.2)
+matrix0 <- cbind(y.1,x1.1,x2.1,x3.1)
+matrix<- rbind(matrix0,matrix)
+design<-matrix
+design<-data.frame(design)
+mm1<-lm(data=design,y.1~x1.1+x2.1+x3.1)
+beta<-mm1$coeff
+beta<- t(beta)
+beta<- t(beta)
+beta3<- cbind(beta3,beta)
+matrix <- cbind(x0.2,x1.2,x2.2)
+z <- rnorm(length(x2.2),0,std)
+beta<-beta1.loop[-4,]
+beta <- t(beta)
+beta <- t(beta)
+x3.2 <- matrix %*% beta + z
+matrix <- cbind(y.2,x1.2,x2.2,x3.2)
+matrix0 <- cbind(y.1,x1.1,x2.1,x3.1)
+matrix<- rbind(matrix0,matrix)
+design<-matrix
+design<-data.frame(design)
+mm1<-lm(data=design,y.1~x1.1+x2.1+x3.1)
+beta<-mm1$coeff
+beta<-t(beta)
+beta<-t(beta)
+beta4<-cbind(beta4,beta)}
+
+betahat01 <- mean(beta1[1,])
+betahat11 <- mean(beta1[2,])
+betahat21 <- mean(beta1[3,])
+betahat31 <- mean(beta1[4,])
+betahat02 <- mean(beta2[1,])
+betahat12 <- mean(beta2[2,])
+betahat22 <- mean(beta2[3,])
+betahat32 <- mean(beta2[4,])
+betahat03 <- mean(beta3[1,])
+betahat13 <- mean(beta3[2,])
+betahat23 <- mean(beta3[3,])
+betahat33 <- mean(beta3[4,])
+betahat04 <- mean(beta4[1,])
+betahat14 <- mean(beta4[2,])
+betahat24 <- mean(beta4[3,])
+betahat34 <- mean(beta4[4,])
+bias1 <- c(betahat01-1, betahat11 - 1, betahat21 +1, betahat31-1)
+bias2 <- c(betahat02-1, betahat12 - 1, betahat22 +1, betahat32-1)
+bias3 <- c(betahat03-1, betahat13 - 1, betahat23 +1, betahat33-1)
+bias4 <- c(betahat04-1, betahat14 - 1, betahat24 +1, betahat34-1)
+var1 <- c(sd(beta1[1,]),sd(beta1[2,]),sd(beta1[3,]),sd(beta1[4,]))
+var2 <- c(sd(beta2[1,]),sd(beta2[2,]),sd(beta2[3,]),sd(beta2[4,]))
+var3 <- c(sd(beta3[1,]),sd(beta3[2,]),sd(beta3[3,]),sd(beta3[4,]))
+var4 <- c(sd(beta4[1,]),sd(beta4[2,]),sd(beta4[3,]),sd(beta4[4,]))
+mse1 <- bias1^2+var1^2
+mse2 <- bias2^2+var2^2
+mse3 <- bias3^2+var3^2
+mse4 <- bias4^2+var4^2
+
